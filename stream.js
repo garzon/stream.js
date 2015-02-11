@@ -157,13 +157,13 @@ Stream.prototype.append = function(stream) {
 	return this;
 };
 
-Stream.map = function(f, stream) {
+Stream.map = function(stream, f) {
 	if(Stream.isEmpty(stream)) return new Stream();
 	return new Stream(function() {
 		return Stream.cons(
 			f(Stream.car(stream)),
 			new Stream(function() {
-				return Stream.map(f, Stream.cdr(stream));
+				return Stream.map(Stream.cdr(stream), f);
 			}) 
 		);
 	});
@@ -178,18 +178,18 @@ Stream.prototype.map = function(f) {
 	return this;
 };
 
-Stream.foreach = function(f, stream) {
+Stream.foreach = function(stream, f) {
 	if(Stream.isEmpty(stream)) return this;
 	f(Stream.car(stream));
-	Stream.foreach(f, Stream.cdr(stream));
+	Stream.foreach(Stream.cdr(stream), f);
 	return this;
 };
-Stream.prototype.foreach = function(f) { return Stream.foreach(f, this); };
+Stream.prototype.foreach = function(f) { return Stream.foreach(this, f); };
 
-Stream.filter = function(f, stream) {
+Stream.filter = function(stream, f) {
 	if(Stream.isEmpty(stream)) return new Stream();
 	var tmp = new Stream(function() {
-		return Stream.filter(f, Stream.cdr(stream));
+		return Stream.filter(Stream.cdr(stream), f);
 	});
 	if(f(Stream.car(stream))) return Stream.cons(Stream.car(stream), tmp);
 	else return tmp;
@@ -211,11 +211,11 @@ Stream.prototype.filter = function(f) {
 	return this;
 };
 
-Stream.flatmap = function(f, stream) {
-	return Stream.reduce(Stream.append, new Stream(), Stream.map(f, stream));
+Stream.flatmap = function(stream, f) {
+	return Stream.reduce(new Stream(), Stream.map(stream, f), Stream.append);
 };
 Stream.prototype.flatmap = function(f) {
-	var res = Stream.flatmap(f, this);
+	var res = Stream.flatmap(this, f);
 	if(typeof res.delay == "undefined") {
 		this.car = res.car;
 		this.cdr = res.cdr;
@@ -227,10 +227,13 @@ Stream.prototype.flatmap = function(f) {
 	return this;
 };
 
-Stream.reduce = function(f, init, stream) {
+Stream.reduce = function(init, stream, f) {
 	if(Stream.isEmpty(stream)) return init;
-	return Stream.reduce(f, f(init, Stream.car(stream)), Stream.cdr(stream));
+	return Stream.reduce(f(init, Stream.car(stream)), Stream.cdr(stream), f);
 };
+Stream.prototype.reduce = function(init, f) {
+	return Stream.reduce(init, this, f);
+}
 
 Stream.range = function(a, b) {
 	if(a == b) return new Stream();

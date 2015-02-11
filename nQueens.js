@@ -11,33 +11,21 @@ function queens(n) {
 				return false;
 			return true;
 		}
-		return Stream.reduce(
-			function(init, flag) { return init && flag; },
-			true,
-			Stream.map(
-				function(othersPos) {
-					return isCheck(Stream.car(board), othersPos);
-				},
-				Stream.cdr(board)
-			)
-		);
+		return Stream.map(Stream.cdr(board), function(othersPos) {
+			return isCheck(Stream.car(board), othersPos);
+		}).reduce(true, function(init, flag) { 
+			return init && flag; 
+		});
 	}
 
 	function queenCol(x) {
 		if(x<0) return new Stream([[]]);
-		else return Stream.filter(isValid,
-			Stream.flatmap(
-				function(board) { 
-					return Stream.map(
-						function(row) {
-							return Stream.cons(makePos(row, x), board);
-						},
-						Stream.range(0, n)
-					);
-				},
-				queenCol(x-1)
-			)
-		);
+		else 
+			return queenCol(x-1).flatmap(function(board) { 
+				return Stream.range(0, n).map(function(row) {
+					return Stream.cons(makePos(row, x), board);
+				});
+			}).filter(isValid);
 	}
 
 	return queenCol(n-1);
