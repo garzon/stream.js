@@ -29,15 +29,15 @@ Stream.prototype.clean = function() {
 Stream.clone = function(stream) { return new Stream(stream); };
 Stream.prototype.clone = function() { return Stream.clone(this); };
 Stream.prototype.cloneFrom = function(stream) { 
-	if(Stream.isEmpty(stream)) {
-		Stream.prototype.clean.call(this);
-	} else {
-		if(typeof stream.delay == "undefined") {
+	if(typeof stream.delay == "undefined") {
+		if(stream.car == null) {
+			Stream.prototype.clean.call(this);
+		} else {
 			this.car = Stream.newCar(stream);
 			this.cdr = new Stream(stream.cdr);
-		} else {
-			this.delay = stream.delay;
 		}
+	} else {
+		this.delay = stream.delay;
 	}
 	return this;
 };
@@ -140,8 +140,9 @@ Stream.append = function(stream1, stream2) {
 	if(Stream.isEmpty(stream1)) return new Stream(stream2);
 	var ret = new Stream();
 	ret.car = Stream.newCar(stream1);
+	var cdr = Stream.cdr(stream1);
 	ret.cdr = new Stream(function() { 
-		return Stream.append(Stream.cdr(stream1), stream2);
+		return Stream.append(cdr, stream2);
 	});
 	return ret;
 };
@@ -159,14 +160,13 @@ Stream.prototype.append = function(stream) {
 
 Stream.map = function(stream, f) {
 	if(Stream.isEmpty(stream)) return new Stream();
-	return new Stream(function() {
-		return Stream.cons(
-			f(Stream.car(stream)),
-			new Stream(function() {
-				return Stream.map(Stream.cdr(stream), f);
-			}) 
-		);
-	});
+	var cdr = Stream.cdr(stream);
+	return Stream.cons(
+		f(Stream.car(stream)),
+		new Stream(function() {
+			return Stream.map(cdr, f);
+		}) 
+	);
 };
 Stream.prototype.map = function(f) {
 	if(Stream.isEmpty(this)) return this;
@@ -188,8 +188,9 @@ Stream.prototype.foreach = function(f) { return Stream.foreach(this, f); };
 
 Stream.filter = function(stream, f) {
 	if(Stream.isEmpty(stream)) return new Stream();
+	var cdr = Stream.cdr(stream);
 	var tmp = new Stream(function() {
-		return Stream.filter(Stream.cdr(stream), f);
+		return Stream.filter(cdr, f);
 	});
 	if(f(Stream.car(stream))) return Stream.cons(Stream.car(stream), tmp);
 	else return tmp;
@@ -233,11 +234,23 @@ Stream.reduce = function(init, stream, f) {
 };
 Stream.prototype.reduce = function(init, f) {
 	return Stream.reduce(init, this, f);
-}
+};
 
 Stream.range = function(a, b) {
 	if(a == b) return new Stream();
 	return Stream.cons(a, new Stream(function() {
 		return Stream.range(a+1, b);
 	}));
+};
+
+Stream.merge = function(stream1, stream2, f) {
+	if(Stream.isEmpty(stream1)) return new Stream();
+	if(Stream.isEmpty(stream2)) return new Stream();
+	var ret = new Stream();
+	ret.car = f(Stream.car(stream1), Stream.car(stream2));
+	var a = stream1.cdr, b = stream2.cdr;
+	ret.cdr = new Stream(function() {
+		return Stream.merge(a, b, f);
+	});
+	return ret;
 };
