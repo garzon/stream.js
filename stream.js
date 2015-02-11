@@ -2,8 +2,7 @@ Stream = function(list) {
 	if(typeof list == "undefined") list = [];
 	if(list instanceof Array) {
 		if(list.length == 0) {
-			this.car = null;
-			this.cdr = null;
+			Stream.prototype.clean.call(this);
 			return;
 		}
 		if(list[0] instanceof Array) this.car = new Stream(list[0]);
@@ -19,15 +18,19 @@ Stream = function(list) {
 		Stream.prototype.cloneFrom.call(this, list);
 		return;
 	}
-	console.error("Stream() - invalid parameter");
+	throw "Stream() - invalid parameter";
+};
+
+Stream.prototype.clean = function() {
+	this.car = null;
+	this.cdr = null;
 };
 
 Stream.clone = function(stream) { return new Stream(stream); };
 Stream.prototype.clone = function() { return Stream.clone(this); };
 Stream.prototype.cloneFrom = function(stream) { 
 	if(Stream.isEmpty(stream)) {
-		this.car = null;
-		this.cdr = null;
+		Stream.prototype.clean.call(this);
 	} else {
 		if(typeof stream.delay == "undefined") {
 			this.car = Stream.newCar(stream);
@@ -42,7 +45,7 @@ Stream.prototype.cloneFrom = function(stream) {
 Stream.eval = function(inputStream, outputStream) {
 	if(typeof inputStream.delay == "undefined") {
 		if(!(inputStream instanceof Stream)) {
-			console.error("eval() - inputStream is not a Stream");
+			throw "eval() - inputStream is not a Stream";
 			return;
 		}
 		outputStream.car = inputStream.car;
@@ -85,8 +88,6 @@ Stream.prototype.toString = function() {
 	return Stream.toString(this);
 }
 
-Stream.emptyStream = new Stream();
-
 Stream.list = function() { return new Stream([].slice.call(arguments)); };
 
 Stream.car = function(stream) { stream.eval(); return stream.car; };
@@ -100,7 +101,14 @@ Stream.newCar = function(stream) {
 };
 Stream.prototype.newCar = function() { return Stream.newCar(this); };
 
-Stream.cdr = function(stream) { stream.eval(); if(stream.cdr != null) stream.cdr.eval(); return (stream.cdr == null) ? Stream.emptyStream : stream.cdr; };
+Stream.cdr = function(stream) { 
+	stream.eval(); 
+	if(stream.cdr instanceof Stream) 
+		stream.cdr.eval();
+	if(stream.cdr == null) stream.cdr = new Stream();
+	if(!(stream.cdr instanceof Stream)) throw "Stream.cdr() - the parameter is not a stream.";
+	return stream.cdr; 
+};
 
 Stream.cadr = function(stream) { return Stream.car(Stream.cdr(stream)); };
 Stream.prototype.cadr = function() { return Stream.cadr(this); };
@@ -137,7 +145,7 @@ Stream.prototype.append = function(stream) {
 };
 
 Stream.map = function(f, stream) {
-	if(Stream.isEmpty(stream)) return Stream.emptyStream;
+	if(Stream.isEmpty(stream)) return new Stream();
 	return new Stream(function() {
 		return Stream.cons(
 			f(Stream.car(stream)),
@@ -154,7 +162,7 @@ Stream.foreach = function(f, stream) {
 };
 
 Stream.filter = function(f, stream) {
-	if(Stream.isEmpty(stream)) return Stream.emptyStream;
+	if(Stream.isEmpty(stream)) return new Stream();
 	var tmp = new Stream(function() {
 		return Stream.filter(f, Stream.cdr(stream));
 	});
@@ -172,7 +180,7 @@ Stream.flatmap = function(f, stream) {
 };
 
 Stream.range = function(a, b) {
-	if(a == b) return Stream.emptyStream;
+	if(a == b) return new Stream();
 	return Stream.cons(a, new Stream(function() {
 		return Stream.range(a+1, b);
 	}));
