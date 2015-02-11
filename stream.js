@@ -16,24 +16,43 @@ Stream = function(list) {
 		return;
 	}
 	if(list instanceof Stream) {
-		this.car = list.car;
-		this.cdr = list.cdr;
+		if(Stream.isEmpty(list)) return new Stream();
+		if(typeof list.delay == "undefined") {
+			this.car = Stream.newCar(list);
+			this.cdr = new Stream(list.cdr);
+		} else {
+			this.delay = list.delay;
+		}
 		return;
 	}
 	console.error("Stream() - invalid parameter");
 };
 
-Stream.prototype.eval = function() {
-	while(typeof this.delay != "undefined") {
-		var res = this.delay();
+Stream.eval = function(inputStream, outputStream) {
+	if(typeof inputStream.delay == "undefined") {
+		if(!(inputStream instanceof Stream)) {
+			console.error("eval() - inputStream is not a Stream");
+			return;
+		}
+		outputStream.car = inputStream.car;
+		outputStream.cdr = inputStream.cdr;
+		return; 
+	}
+	outputStream.delay = inputStream.delay;
+	while(typeof outputStream.delay != "undefined") {
+		var res = outputStream.delay();
 		if(typeof res.delay == "undefined") {
-			this.car = res.car;
-			this.cdr = res.cdr;
-			this.delay = undefined;
+			outputStream.car = res.car;
+			outputStream.cdr = res.cdr;
+			outputStream.delay = undefined;
 		} else {
-			this.delay = res.delay;
+			outputStream.delay = res.delay;
 		}
 	}
+}
+
+Stream.prototype.eval = function() {
+	Stream.eval(this, this);
 };
 
 Stream.prototype.toString = function() {
@@ -55,8 +74,15 @@ Stream.prototype.toString = function() {
 
 Stream.emptyStream = new Stream();
 
-Stream.list = function() { return new Stream(arguments); };
+Stream.list = function() { return new Stream([].slice.call(arguments)); };
 Stream.car = function(stream) { stream.eval(); return stream.car; };
+Stream.newCar = function(stream) {
+	var car = Stream.car(stream);
+	if(car instanceof Stream)
+		return new Stream(car);
+	else
+		return car;
+};
 Stream.cdr = function(stream) { stream.eval(); if(stream.cdr != null) stream.cdr.eval(); return (stream.cdr == null) ? Stream.emptyStream : stream.cdr; };
 
 Stream.cadr = function(stream) { return Stream.car(Stream.cdr(stream)); };
@@ -69,11 +95,17 @@ Stream.cons = function(element, stream) {
 	return ret;
 };
 
-// TODO
 Stream.append = function(stream1, stream2) {
-	while(!Stream.isEmpty(Stream.cdr(stream1))) stream1 = Stream.cdr(stream1);
-	stream1.cdr = stream2;
-	return stream1;
+	if(typeof stream1.delay != "undefined") {
+		stream1.eval();
+	}
+	if(Stream.isEmpty(stream1)) return new Stream(stream2);
+	var ret = new Stream();
+	ret.car = Stream.newCar(stream1);
+	ret.cdr = new Stream(function() { 
+		return Stream.append(Stream.cdr(stream1), stream2);
+	});
+	return ret;
 };
 
 Stream.map = function(f, stream) {
