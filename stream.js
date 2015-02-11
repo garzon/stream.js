@@ -240,6 +240,18 @@ Stream.range = function(a, b) {
 	}));
 };
 
+Stream.prototype.cut = function(n) {
+	if(n == 0) {
+		this.clean();
+	}
+	if(Stream.isEmpty(this)) return this;
+	var tmp = Stream.cdr(this);
+	this.cdr = new Stream(function() {
+		return tmp.cut(n-1);
+	});
+	return this;
+};
+
 Stream.merge = function(stream1, stream2, f) {
 	if(Stream.isEmpty(stream1)) return new Stream();
 	if(Stream.isEmpty(stream2)) return new Stream();
