@@ -140,9 +140,8 @@ Stream.append = function(stream1, stream2) {
 	if(Stream.isEmpty(stream1)) return new Stream(stream2);
 	var ret = new Stream();
 	ret.car = Stream.newCar(stream1);
-	var cdr = Stream.cdr(stream1);
 	ret.cdr = new Stream(function() { 
-		return Stream.append(cdr, stream2);
+		return Stream.append(Stream.cdr(stream1), stream2);
 	});
 	return ret;
 };
@@ -160,11 +159,10 @@ Stream.prototype.append = function(stream) {
 
 Stream.map = function(stream, f) {
 	if(Stream.isEmpty(stream)) return new Stream();
-	var cdr = Stream.cdr(stream);
 	return Stream.cons(
 		f(Stream.car(stream)),
 		new Stream(function() {
-			return Stream.map(cdr, f);
+			return Stream.map(Stream.cdr(stream), f);
 		}) 
 	);
 };
@@ -188,9 +186,8 @@ Stream.prototype.foreach = function(f) { return Stream.foreach(this, f); };
 
 Stream.filter = function(stream, f) {
 	if(Stream.isEmpty(stream)) return new Stream();
-	var cdr = Stream.cdr(stream);
 	var tmp = new Stream(function() {
-		return Stream.filter(cdr, f);
+		return Stream.filter(Stream.cdr(stream), f);
 	});
 	if(f(Stream.car(stream))) return Stream.cons(Stream.car(stream), tmp);
 	else return tmp;
