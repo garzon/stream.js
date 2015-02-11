@@ -86,7 +86,7 @@ Stream.toString = function(stream) {
 };
 Stream.prototype.toString = function() {
 	return Stream.toString(this);
-}
+};
 
 Stream.list = function() { return new Stream([].slice.call(arguments)); };
 
@@ -168,11 +168,23 @@ Stream.map = function(f, stream) {
 		);
 	});
 };
+Stream.prototype.map = function(f) {
+	if(Stream.isEmpty(this)) return this;
+	this.car = f(this.car);
+	var tmp = this.cdr;
+	this.cdr = new Stream(function() {
+		return tmp.map(f);
+	});
+	return this;
+};
 
 Stream.foreach = function(f, stream) {
+	if(Stream.isEmpty(stream)) return this;
 	f(Stream.car(stream));
 	Stream.foreach(f, Stream.cdr(stream));
+	return this;
 };
+Stream.prototype.foreach = function(f) { return Stream.foreach(f, this); };
 
 Stream.filter = function(f, stream) {
 	if(Stream.isEmpty(stream)) return new Stream();
@@ -182,14 +194,42 @@ Stream.filter = function(f, stream) {
 	if(f(Stream.car(stream))) return Stream.cons(Stream.car(stream), tmp);
 	else return tmp;
 };
-
-Stream.reduce = function(f, init, stream) {
-	if(Stream.isEmpty(stream)) return init;
-	return Stream.reduce(f, f(init, Stream.car(stream)), Stream.cdr(stream));
+Stream.prototype.filter = function(f) {
+	if(Stream.isEmpty(this)) return this;
+	var tmp = this.cdr;
+	if(f(Stream.car(this))) {
+		this.cdr = new Stream(function() {
+			return tmp.filter(f);
+		});
+	} else {
+		this.delay = function() {
+			return tmp.filter(f);
+		}
+		this.car = null;
+		this.cdr = null;
+	}
+	return this;
 };
 
 Stream.flatmap = function(f, stream) {
 	return Stream.reduce(Stream.append, new Stream(), Stream.map(f, stream));
+};
+Stream.prototype.flatmap = function(f) {
+	var res = Stream.flatmap(f, this);
+	if(typeof res.delay == "undefined") {
+		this.car = res.car;
+		this.cdr = res.cdr;
+		this.delay = undefined;
+	} else {
+		this.clean();
+		this.delay = res.delay;
+	}
+	return this;
+};
+
+Stream.reduce = function(f, init, stream) {
+	if(Stream.isEmpty(stream)) return init;
+	return Stream.reduce(f, f(init, Stream.car(stream)), Stream.cdr(stream));
 };
 
 Stream.range = function(a, b) {
