@@ -3,8 +3,8 @@ function makeFib() {
 	return Stream.cons(1, new Stream(function() {
 		return Stream.cons(1, new Stream(function() {
 			return Stream.merge(
-					Stream.cdr(new Stream(makeFib)), 
-					Stream.cdr(new Stream(function() { return Stream.cdr(new Stream(makeFib)); })),
+					new Stream(makeFib), 
+					Stream.cdr(new Stream(function() { return new Stream(makeFib); })),
 					add);
 		}));
 	}));
