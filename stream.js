@@ -90,7 +90,6 @@ Stream.emptyStream = new Stream();
 Stream.list = function() { return new Stream([].slice.call(arguments)); };
 
 Stream.car = function(stream) { stream.eval(); return stream.car; };
-Stream.prototype.car = function() { return Stream.car(this); };
 
 Stream.newCar = function(stream) {
 	var car = Stream.car(stream);
@@ -102,7 +101,6 @@ Stream.newCar = function(stream) {
 Stream.prototype.newCar = function() { return Stream.newCar(this); };
 
 Stream.cdr = function(stream) { stream.eval(); if(stream.cdr != null) stream.cdr.eval(); return (stream.cdr == null) ? Stream.emptyStream : stream.cdr; };
-Stream.prototype.cdr = function() { return Stream.cdr(this); };
 
 Stream.cadr = function(stream) { return Stream.car(Stream.cdr(stream)); };
 Stream.prototype.cadr = function() { return Stream.cadr(this); };
@@ -129,10 +127,11 @@ Stream.append = function(stream1, stream2) {
 Stream.prototype.append = function(stream) {
 	if(Stream.isEmpty(this)) {
 		this.cloneFrom(stream);
-		return;
+		return this;
 	}
+	var tmp = this.cdr;
 	this.cdr = new Stream(function() { 
-		return Stream.cdr(this).append(stream);
+		return tmp.append(stream);
 	});
 	return this;
 };
