@@ -119,9 +119,22 @@ Stream.prototype.isEmpty = function() { return Stream.isEmpty(this); };
 Stream.cons = function(element, stream) {
 	var ret = new Stream();
 	ret.car = element;
-	ret.cdr = stream;
+	ret.cdr = new Stream(stream);
 	return ret;
 };
+Stream.prototype.cons = function(element) {
+	if(typeof this.delay == "undefined") {
+		var ret = new Stream();
+		ret.cdr = this.cdr;
+		ret.car = this.car;
+		this.cdr = ret;
+	} else {
+		this.cdr = new Stream(this.delay);
+		this.delay = undefined;
+	}
+	this.car = element;
+	return this;
+}
 
 Stream.append = function(stream1, stream2) {
 	if(Stream.isEmpty(stream1)) return new Stream(stream2);
