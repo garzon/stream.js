@@ -4,15 +4,15 @@ function queens(n) {
 	function posY(pos) { return Stream.cadr(pos); };
 
 	function isValid(board) {
-		function isCheck(pos1, pos2) {
+		function check(pos1, pos2) {
 			if(posX(pos1) == posX(pos2)) return false;
 			if(posY(pos1) == posY(pos2)) return false;
 			if(Math.abs(posX(pos1) - posX(pos2)) == Math.abs(posY(pos1) - posY(pos2)))
 				return false;
 			return true;
 		}
-		return Stream.map(Stream.cdr(board), function(othersPos) {
-			return isCheck(Stream.car(board), othersPos);
+		return Stream.cdr(board).map(function(othersPos) {
+			return check(Stream.car(board), othersPos);
 		}).reduce(true, function(init, flag) { 
 			return init && flag; 
 		});

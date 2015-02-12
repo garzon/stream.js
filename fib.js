@@ -14,3 +14,5 @@ function fib() {
 	fib = function() { return res; };
 	return res;
 }
+
+console.log(fib().cut(100).toString());

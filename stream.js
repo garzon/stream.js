@@ -196,3 +196,7 @@ Stream.merge = function(stream1, stream2, f) {
 	});
 	return ret;
 };
+
+Stream.naturalNumbers = function() {
+	return Stream.range(0, -1);
+};
