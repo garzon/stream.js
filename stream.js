@@ -185,5 +185,18 @@ Stream.merge = function(stream1, stream2, f) {
 };
 
 Stream.naturalNumbers = function() {
-	return Stream.range(0, -1);
+	var res = Stream.range(0, -1);
+	Stream.naturalNumbers = function() { return res; };
+	return res;
 };
+
+Stream.ref = function(n, stream) {
+	if(n < 1) return null;
+	while(n != 1) {
+		if(stream.isEmpty()) return null;
+		n = n - 1;
+		stream = stream.cdr();
+	}
+	return stream.car();
+};
+Stream.prototype.ref = function(n) { return Stream.ref(n, this); };
