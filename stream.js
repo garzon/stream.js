@@ -176,13 +176,9 @@ Stream.prototype.cut = function(n) { return Stream.cut(n, this); };
 Stream.merge = function(stream1, stream2, f) {
 	if(Stream.isEmpty(stream1)) return new Stream();
 	if(Stream.isEmpty(stream2)) return new Stream();
-	var ret = new Stream();
-	ret.car = f(Stream.car(stream1), Stream.car(stream2));
-	var a = stream1.cdr, b = stream2.cdr;
-	ret.cdr = new Stream(function() {
-		return Stream.merge(a, b, f);
-	});
-	return ret;
+	return Stream.cons(f(Stream.car(stream1), Stream.car(stream2)), new Stream(function() {
+		return Stream.merge(Stream.cdr(stream1), Stream.cdr(stream2), f);
+	}));
 };
 
 Stream.naturalNumbers = function() {
