@@ -124,9 +124,7 @@ Stream.cons = function(element, stream) {
 	ret.cdr = new Stream(stream);
 	return ret;
 };
-Stream.prototype.cons = function(element) {
-
-}
+Stream.prototype.cons = function(element) { return Stream.cons(element, this); };
 
 Stream.append = function(stream1, stream2) {
 	if(Stream.isEmpty(stream1)) return new Stream(stream2);
@@ -137,9 +135,7 @@ Stream.append = function(stream1, stream2) {
 	});
 	return ret;
 };
-Stream.prototype.append = function(stream) {
-
-};
+Stream.prototype.append = function(stream) { return Stream.append(this, stream); };
 
 Stream.map = function(stream, f) {
 	if(Stream.isEmpty(stream)) return new Stream();
@@ -150,9 +146,7 @@ Stream.map = function(stream, f) {
 		}) 
 	);
 };
-Stream.prototype.map = function(f) {
-
-};
+Stream.prototype.map = function(f) { return Stream.map(this, f); };
 
 Stream.foreach = function(stream, f) {
 	if(Stream.isEmpty(stream)) return this;
@@ -170,16 +164,12 @@ Stream.filter = function(stream, f) {
 	if(f(Stream.car(stream))) return Stream.cons(Stream.car(stream), tmp);
 	else return tmp;
 };
-Stream.prototype.filter = function(f) {
-
-};
+Stream.prototype.filter = function(f) { return Stream.filter(this, f); };
 
 Stream.flatmap = function(stream, f) {
 	return Stream.reduce(new Stream(), Stream.map(stream, f), Stream.append);
 };
-Stream.prototype.flatmap = function(f) {
-
-};
+Stream.prototype.flatmap = function(f) { return Stream.flatmap(this, f); };
 
 Stream.reduce = function(init, stream, f) {
 	if(Stream.isEmpty(stream)) return init;
@@ -202,9 +192,7 @@ Stream.cut = function(n, stream) {
 		return Stream.cut(n-1, Stream.cdr(stream));
 	}));
 }
-Stream.prototype.cut = function(n) {
-
-};
+Stream.prototype.cut = function(n) { return Stream.cut(n, this); };
 
 Stream.merge = function(stream1, stream2, f) {
 	if(Stream.isEmpty(stream1)) return new Stream();
