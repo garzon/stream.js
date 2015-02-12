@@ -10,7 +10,7 @@ function fib() {
 			}));
 		}));
 	}
-	var res = make_fib();
+	var res = make_fib(); // save the result in res
 	fib = function() { return res; };
 	return res;
 }
