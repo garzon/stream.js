@@ -1,3 +1,5 @@
+// ============= basic definitions start ===============
+
 Stream = function(list) {
 	if(typeof list == "undefined") list = [];
 	if(list instanceof Array) {
@@ -57,6 +59,31 @@ Stream.prototype.eval = function() {
 	return this;
 };
 
+Stream.list = function() { return new Stream([].slice.call(arguments)); };
+
+Stream.car = function(stream) { stream.eval(); return stream._car; };
+Stream.prototype.car = function() { return Stream.car(this); };
+
+Stream.cdr = function(stream) { 
+	stream.eval(); 
+	if(stream._cdr instanceof Stream) 
+		stream._cdr.eval();
+	if(stream._cdr == null) stream._cdr = new Stream();
+	if(!(stream._cdr instanceof Stream)) throw "Stream.cdr() - the parameter is not a stream.";
+	return stream._cdr; 
+};
+Stream.prototype.cdr = function() { return Stream.cdr(this); };
+
+Stream.cons = function(element, stream) {
+	var ret = new Stream();
+	ret._car = element;
+	ret._cdr = stream;
+	return ret;
+};
+Stream.prototype.cons = function(element) { return Stream.cons(element, this); };
+
+// ================ common algorithms start ====================
+
 Stream.toString = function(stream) {
 	var printString = "(";
 	while(!Stream.isEmpty(stream)) {
@@ -78,34 +105,11 @@ Stream.prototype.toString = function() {
 	return Stream.toString(this);
 };
 
-Stream.list = function() { return new Stream([].slice.call(arguments)); };
-
-Stream.car = function(stream) { stream.eval(); return stream._car; };
-Stream.prototype.car = function() { return Stream.car(this); };
-
-Stream.cdr = function(stream) { 
-	stream.eval(); 
-	if(stream._cdr instanceof Stream) 
-		stream._cdr.eval();
-	if(stream._cdr == null) stream._cdr = new Stream();
-	if(!(stream._cdr instanceof Stream)) throw "Stream.cdr() - the parameter is not a stream.";
-	return stream._cdr; 
-};
-Stream.prototype.cdr = function() { return Stream.cdr(this); };
-
 Stream.cadr = function(stream) { return Stream.car(Stream.cdr(stream)); };
 Stream.prototype.cadr = function() { return Stream.cadr(this); };
 
 Stream.isEmpty = function(stream) { return Stream.car(stream) == null; };
 Stream.prototype.isEmpty = function() { return Stream.isEmpty(this); };
-
-Stream.cons = function(element, stream) {
-	var ret = new Stream();
-	ret._car = element;
-	ret._cdr = stream;
-	return ret;
-};
-Stream.prototype.cons = function(element) { return Stream.cons(element, this); };
 
 Stream.append = function(stream1, stream2) {
 	if(Stream.isEmpty(stream1)) return stream2;
