@@ -33,8 +33,8 @@ Stream.prototype.cloneFrom = function(stream) {
 		if(stream.car == null) {
 			Stream.prototype.clean.call(this);
 		} else {
-			this.car = Stream.car(stream);
-			this.cdr = new Stream(stream.cdr);
+			this.car = stream.car;
+			this.cdr = stream.cdr;
 		}
 	} else {
 		this.delay = stream.delay;
@@ -100,13 +100,13 @@ Stream.prototype.isEmpty = function() { return Stream.isEmpty(this); };
 Stream.cons = function(element, stream) {
 	var ret = new Stream();
 	ret.car = element;
-	ret.cdr = new Stream(stream);
+	ret.cdr = stream;
 	return ret;
 };
 Stream.prototype.cons = function(element) { return Stream.cons(element, this); };
 
 Stream.append = function(stream1, stream2) {
-	if(Stream.isEmpty(stream1)) return new Stream(stream2);
+	if(Stream.isEmpty(stream1)) return stream2;
 	var ret = new Stream();
 	ret.car = Stream.car(stream1);
 	ret.cdr = new Stream(function() { 
