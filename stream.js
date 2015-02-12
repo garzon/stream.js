@@ -33,7 +33,7 @@ Stream.prototype.cloneFrom = function(stream) {
 		if(stream.car == null) {
 			Stream.prototype.clean.call(this);
 		} else {
-			this.car = Stream.newCar(stream);
+			this.car = Stream.car(stream);
 			this.cdr = new Stream(stream.cdr);
 		}
 	} else {
@@ -94,15 +94,6 @@ Stream.list = function() { return new Stream([].slice.call(arguments)); };
 
 Stream.car = function(stream) { stream.eval(); return stream.car; };
 
-Stream.newCar = function(stream) {
-	var car = Stream.car(stream);
-	if(car instanceof Stream)
-		return new Stream(car);
-	else
-		return car;
-};
-Stream.prototype.newCar = function() { return Stream.newCar(this); };
-
 Stream.cdr = function(stream) { 
 	stream.eval(); 
 	if(stream.cdr instanceof Stream) 
@@ -129,7 +120,7 @@ Stream.prototype.cons = function(element) { return Stream.cons(element, this); }
 Stream.append = function(stream1, stream2) {
 	if(Stream.isEmpty(stream1)) return new Stream(stream2);
 	var ret = new Stream();
-	ret.car = Stream.newCar(stream1);
+	ret.car = Stream.car(stream1);
 	ret.cdr = new Stream(function() { 
 		return Stream.append(Stream.cdr(stream1), stream2);
 	});
