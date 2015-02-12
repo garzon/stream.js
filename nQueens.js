@@ -1,7 +1,7 @@
 function queens(n) {
 	function makePos(x, y) { return Stream.list(x, y); };
-	function posX(pos) { return Stream.car(pos); };
-	function posY(pos) { return Stream.cadr(pos); };
+	function posX(pos) { return pos.car(); };
+	function posY(pos) { return pos.cadr(); };
 
 	function isValid(board) {
 		function check(pos1, pos2) {
@@ -11,8 +11,8 @@ function queens(n) {
 				return false;
 			return true;
 		}
-		return Stream.cdr(board).map(function(othersPos) {
-			return check(Stream.car(board), othersPos);
+		return board.cdr().map(function(othersPos) {
+			return check(board.car(), othersPos);
 		}).reduce(true, function(init, flag) { 
 			return init && flag; 
 		});

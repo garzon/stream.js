@@ -5,7 +5,7 @@ function fib() {
 			return Stream.cons(1, new Stream(function() {
 				return Stream.merge(
 						new Stream(fib), 
-						Stream.cdr(new Stream(fib)),
+						new Stream(fib).cdr(),
 						add);
 			}));
 		}));
