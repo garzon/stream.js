@@ -23,7 +23,7 @@ function queens(n) {
 		else 
 			return queenCol(x-1).flatmap(function(board) { 
 				return Stream.range(0, n).map(function(row) {
-					return Stream.cons(makePos(row, x), board);
+					return board.cons(makePos(row, x));
 				});
 			}).filter(isValid);
 	}

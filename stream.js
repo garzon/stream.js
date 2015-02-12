@@ -5,13 +5,13 @@ Stream = function(list) {
 			Stream.prototype.clean.call(this);
 			return;
 		}
-		if(list[0] instanceof Array) this.car = new Stream(list[0]);
-		else this.car = list[0];
-		this.cdr = new Stream(list.length < 2 ? [] : list.slice(1));
+		if(list[0] instanceof Array) this._car = new Stream(list[0]);
+		else this._car = list[0];
+		this._cdr = new Stream(list.length < 2 ? [] : list.slice(1));
 		return;
 	}
 	if(list instanceof Function) {
-		this.delay = list;
+		this._delay = list;
 		return;
 	}
 	if(list instanceof Stream) {
@@ -22,36 +22,36 @@ Stream = function(list) {
 };
 
 Stream.prototype.clean = function() {
-	this.car = null;
-	this.cdr = null;
+	this._car = null;
+	this._cdr = null;
 };
 
 Stream.clone = function(stream) { return new Stream(stream); };
 Stream.prototype.clone = function() { return Stream.clone(this); };
 Stream.prototype.cloneFrom = function(stream) { 
-	if(typeof stream.delay == "undefined") {
-		if(stream.car == null) {
+	if(typeof stream._delay == "undefined") {
+		if(stream._car == null) {
 			Stream.prototype.clean.call(this);
 		} else {
-			this.car = stream.car;
-			this.cdr = stream.cdr;
+			this._car = stream._car;
+			this._cdr = stream._cdr;
 		}
 	} else {
-		this.delay = stream.delay;
+		this._delay = stream._delay;
 	}
 	return this;
 };
 
 Stream.prototype.eval = function() {
-	if(typeof this.delay == "undefined") return this; 
-	while(typeof this.delay != "undefined") {
-		var res = this.delay();
-		if(typeof res.delay == "undefined") {
-			this.car = res.car;
-			this.cdr = res.cdr;
-			this.delay = undefined;
+	if(typeof this._delay == "undefined") return this; 
+	while(typeof this._delay != "undefined") {
+		var res = this._delay();
+		if(typeof res._delay == "undefined") {
+			this._car = res._car;
+			this._cdr = res._cdr;
+			this._delay = undefined;
 		} else {
-			this.delay = res.delay;
+			this._delay = res._delay;
 		}
 	}
 	return this;
@@ -80,16 +80,18 @@ Stream.prototype.toString = function() {
 
 Stream.list = function() { return new Stream([].slice.call(arguments)); };
 
-Stream.car = function(stream) { stream.eval(); return stream.car; };
+Stream.car = function(stream) { stream.eval(); return stream._car; };
+Stream.prototype.car = function() { return Stream.car(this); };
 
 Stream.cdr = function(stream) { 
 	stream.eval(); 
-	if(stream.cdr instanceof Stream) 
-		stream.cdr.eval();
-	if(stream.cdr == null) stream.cdr = new Stream();
-	if(!(stream.cdr instanceof Stream)) throw "Stream.cdr() - the parameter is not a stream.";
-	return stream.cdr; 
+	if(stream._cdr instanceof Stream) 
+		stream._cdr.eval();
+	if(stream._cdr == null) stream._cdr = new Stream();
+	if(!(stream._cdr instanceof Stream)) throw "Stream.cdr() - the parameter is not a stream.";
+	return stream._cdr; 
 };
+Stream.prototype.cdr = function() { return Stream.cdr(this); };
 
 Stream.cadr = function(stream) { return Stream.car(Stream.cdr(stream)); };
 Stream.prototype.cadr = function() { return Stream.cadr(this); };
@@ -99,20 +101,17 @@ Stream.prototype.isEmpty = function() { return Stream.isEmpty(this); };
 
 Stream.cons = function(element, stream) {
 	var ret = new Stream();
-	ret.car = element;
-	ret.cdr = stream;
+	ret._car = element;
+	ret._cdr = stream;
 	return ret;
 };
 Stream.prototype.cons = function(element) { return Stream.cons(element, this); };
 
 Stream.append = function(stream1, stream2) {
 	if(Stream.isEmpty(stream1)) return stream2;
-	var ret = new Stream();
-	ret.car = Stream.car(stream1);
-	ret.cdr = new Stream(function() { 
+	return Stream.cons(Stream.car(stream1), new Stream(function() { 
 		return Stream.append(Stream.cdr(stream1), stream2);
-	});
-	return ret;
+	}));
 };
 Stream.prototype.append = function(stream) { return Stream.append(this, stream); };
 
