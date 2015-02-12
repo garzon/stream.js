@@ -125,17 +125,7 @@ Stream.cons = function(element, stream) {
 	return ret;
 };
 Stream.prototype.cons = function(element) {
-	if(typeof this.delay == "undefined") {
-		var ret = new Stream();
-		ret.cdr = this.cdr;
-		ret.car = this.car;
-		this.cdr = ret;
-	} else {
-		this.cdr = new Stream(this.delay);
-		this.delay = undefined;
-	}
-	this.car = element;
-	return this;
+
 }
 
 Stream.append = function(stream1, stream2) {
@@ -148,15 +138,7 @@ Stream.append = function(stream1, stream2) {
 	return ret;
 };
 Stream.prototype.append = function(stream) {
-	if(Stream.isEmpty(this)) {
-		this.cloneFrom(stream);
-		return this;
-	}
-	var tmp = this.cdr;
-	this.cdr = new Stream(function() { 
-		return tmp.append(stream);
-	});
-	return this;
+
 };
 
 Stream.map = function(stream, f) {
@@ -169,13 +151,7 @@ Stream.map = function(stream, f) {
 	);
 };
 Stream.prototype.map = function(f) {
-	if(Stream.isEmpty(this)) return this;
-	this.car = f(this.car);
-	var tmp = this.cdr;
-	this.cdr = new Stream(function() {
-		return tmp.map(f);
-	});
-	return this;
+
 };
 
 Stream.foreach = function(stream, f) {
@@ -195,36 +171,14 @@ Stream.filter = function(stream, f) {
 	else return tmp;
 };
 Stream.prototype.filter = function(f) {
-	if(Stream.isEmpty(this)) return this;
-	var tmp = this.cdr;
-	if(f(Stream.car(this))) {
-		this.cdr = new Stream(function() {
-			return tmp.filter(f);
-		});
-	} else {
-		this.delay = function() {
-			return tmp.filter(f);
-		}
-		this.car = null;
-		this.cdr = null;
-	}
-	return this;
+
 };
 
 Stream.flatmap = function(stream, f) {
 	return Stream.reduce(new Stream(), Stream.map(stream, f), Stream.append);
 };
 Stream.prototype.flatmap = function(f) {
-	var res = Stream.flatmap(this, f);
-	if(typeof res.delay == "undefined") {
-		this.car = res.car;
-		this.cdr = res.cdr;
-		this.delay = undefined;
-	} else {
-		this.clean();
-		this.delay = res.delay;
-	}
-	return this;
+
 };
 
 Stream.reduce = function(init, stream, f) {
@@ -242,16 +196,14 @@ Stream.range = function(a, b) {
 	}));
 };
 
+Stream.cut = function(n, stream) {
+	if(n == 0 || Stream.isEmpty(stream)) return new Stream();
+	return Stream.cons(Stream.car(stream), new Stream(function() {
+		return Stream.cut(n-1, Stream.cdr(stream));
+	}));
+}
 Stream.prototype.cut = function(n) {
-	if(n == 0) {
-		this.clean();
-	}
-	if(Stream.isEmpty(this)) return this;
-	var tmp = Stream.cdr(this);
-	this.cdr = new Stream(function() {
-		return tmp.cut(n-1);
-	});
-	return this;
+
 };
 
 Stream.merge = function(stream1, stream2, f) {
