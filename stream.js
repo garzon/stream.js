@@ -42,30 +42,18 @@ Stream.prototype.cloneFrom = function(stream) {
 	return this;
 };
 
-Stream.eval = function(inputStream, outputStream) {
-	if(typeof inputStream.delay == "undefined") {
-		if(!(inputStream instanceof Stream)) {
-			throw "eval() - inputStream is not a Stream";
-			return;
-		}
-		outputStream.car = inputStream.car;
-		outputStream.cdr = inputStream.cdr;
-		return; 
-	}
-	outputStream.delay = inputStream.delay;
-	while(typeof outputStream.delay != "undefined") {
-		var res = outputStream.delay();
-		if(typeof res.delay == "undefined") {
-			outputStream.car = res.car;
-			outputStream.cdr = res.cdr;
-			outputStream.delay = undefined;
-		} else {
-			outputStream.delay = res.delay;
-		}
-	}
-}
 Stream.prototype.eval = function() {
-	Stream.eval(this, this);
+	if(typeof this.delay == "undefined") return this; 
+	while(typeof this.delay != "undefined") {
+		var res = this.delay();
+		if(typeof res.delay == "undefined") {
+			this.car = res.car;
+			this.cdr = res.cdr;
+			this.delay = undefined;
+		} else {
+			this.delay = res.delay;
+		}
+	}
 	return this;
 };
 
