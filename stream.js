@@ -71,15 +71,17 @@ Stream.prototype.eval = function() {
 
 Stream.toString = function(stream) {
 	var printString = "(";
-	if(Stream.car(stream) instanceof Stream) {
-		var subString = Stream.car(stream).toString();
-		printString += "\n  " + subString.substr(0, subString.length-1).replace(/\n/g, "\n  ");
-	} else {
-		printString += Stream.car(stream);
-	}
-	if(!Stream.isEmpty(Stream.cdr(stream))) {
-		var subString = Stream.cdr(stream).toString();
-		printString += " " + subString.substr(1, subString.length-3);
+	while(!Stream.isEmpty(stream)) {
+		if(Stream.car(stream) instanceof Stream) {
+			var subString = Stream.car(stream).toString();
+			printString += "\n  " + subString.substr(0, subString.length-1).replace(/\n/g, "\n  ");
+		} else {
+			printString += Stream.car(stream);
+		}
+		stream = Stream.cdr(stream);
+		if(!Stream.isEmpty(stream)) {
+			printString += " ";
+		}
 	}
 	printString += ")\n";
 	return printString;

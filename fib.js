@@ -11,6 +11,6 @@ function fib() {
 		}));
 	}
 	var res = make_fib();
-	fib = function() { return new Stream(res); };
-	return new Stream(res);
+	fib = function() { return res; };
+	return res;
 }
